@@ -30,21 +30,21 @@ def caller_file() -> str:
 
 def export(part: Part) -> None:
     file_of_caller = caller_file()
-    print("Exporting to STEP using ref %s" % file_of_caller)
+    print("Exporting to STL using ref %s" % file_of_caller)
     for i, solid in enumerate(part.solids()):
         if 'src/' in file_of_caller:
             file_in_build_dir = 'build/'.join(file_of_caller.rsplit('src/', 1))  # Last src/ -> build/
         else:
             file_in_build_dir = '../build/' + file_of_caller  # No src/ -> build/
         os.makedirs(os.path.dirname(file_in_build_dir), exist_ok=True)
-        solid.export_step(file_in_build_dir[:-3] + (f'_{i}' if len(part.solids()) > 1 else '') + '.step')
+        solid.export_stl(file_in_build_dir[:-3] + (f'_{i}' if len(part.solids()) > 1 else '') + '.stl')
 
 
 def show_or_export(part: Part) -> None:
     try:
         show_all()()
     except Exception as e:
-        print("Error showing part (%s), exporting to STEP instead" % e)
+        print("Error showing part (%s), exporting to STL instead" % e)
         export(part)
 
 
