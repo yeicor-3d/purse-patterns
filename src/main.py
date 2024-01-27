@@ -7,9 +7,9 @@ from scipy import optimize
 height = wall_min * 4
 decor = height / 2
 hole_diameter = 2
-hole_corner_to_center = 2 * hole_diameter
+hole_corner_to_center = 1.5 * hole_diameter
 decor_offset = 4 * wall
-decor_width = decor_offset / 2
+decor_width = height
 decor_hole = 3 * decor_offset
 
 # Extract the two wires from the source drawing
@@ -109,14 +109,18 @@ for i, sketch in enumerate(sketches):
         # - Hex grid decoration / material saving
         face_outer_filter = offset(face, amount=-decor_offset, mode=Mode.PRIVATE)
         face_cut = face - faces().sort_by(Axis.Z)[-1]
-        face_inner_filter_sub = offset(face_cut, amount=decor_offset, mode=Mode.PRIVATE)
+        face_inner_filter_sub = offset(face_cut, amount=decor_width, mode=Mode.PRIVATE)
         face_filter = face_outer_filter.face()
         for tmp_face in face_inner_filter_sub.faces():
             face_filter -= tmp_face.face()
             face_filter = face_filter.face()
         with BuildSketch() as sketch:
-            with HexLocations((decor_hole + decor_width) / 2, 6, 9):
-                RegularPolygon(decor_hole / 2, 6, major_radius=False)
+            diameter = decor_hole + decor_width
+            repeat_x = int(face_filter.bounding_box().size.X / diameter) + 2
+            repeat_y = int(face_filter.bounding_box().size.Y / diameter) + 2
+            with Locations(Location((0, face.center().Y, 0))):
+                with HexLocations(diameter / 2, repeat_x, repeat_y):
+                    RegularPolygon(decor_hole / 2, 6, major_radius=False)
             add(face_filter.move(Location((0, 0, -face_filter.center().Z))), mode=Mode.INTERSECT)
         extrude(amount=height, mode=Mode.SUBTRACT)
 
